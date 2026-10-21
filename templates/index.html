@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive RSA Digital Signature Laboratory - Demonstrating asymmetric cryptography, RSA-PSS, SHA-256 hashing, signing, verification, and tamper detection between Alice and Bob.">
+    <title>RSA Digital Signature Lab | Alice & Bob Cryptography Demonstration</title>
+    <!-- Modern Typography: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+    <!-- Background Ambient Glows -->
+    <div class="ambient-glow glow-alice"></div>
+    <div class="ambient-glow glow-bob"></div>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="crypto-icon-box">
+                    <span class="lock-glyph">🔐</span>
+                </div>
+                <div>
+                    <h1 class="app-title">RSA Digital Signature Lab</h1>
+                    <p class="app-subtitle">Interactive Cryptography Demonstration: Alice (Sender) & Bob (Receiver)</p>
+                </div>
+            </div>
+
+            <div class="header-badges">
+                <span class="spec-badge badge-rsa" title="Asymmetric 2048-bit RSA Key Generation">RSA-2048</span>
+                <span class="spec-badge badge-pss" title="Probabilistic Signature Scheme (PKCS#1 v2.1)">RSA-PSS</span>
+                <span class="spec-badge badge-hash" title="Secure Hash Algorithm 256-bit Digest">SHA-256</span>
+                <button id="btn-open-viva" class="btn-secondary-sm" title="View Practical Viva Questions & Demo Script">
+                    🎓 Viva & Demo Guide
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive Interactive Workflow Progress Bar -->
+        <nav class="workflow-nav" aria-label="Cryptographic Workflow Steps">
+            <div class="workflow-steps">
+                <div class="step-item active" id="nav-step-1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">Generate RSA Keys</span>
+                </div>
+                <div class="step-arrow">➔</div>
+                <div class="step-item" id="nav-step-2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">Alice Signs</span>
+                </div>
+                <div class="step-arrow">➔</div>
+                <div class="step-item" id="nav-step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Send to Bob</span>
+                </div>
+                <div class="step-arrow">➔</div>
+                <div class="step-item" id="nav-step-4">
+                    <span class="step-num">4</span>
+                    <span class="step-label">Bob Verifies</span>
+                </div>
+                <div class="step-arrow">➔</div>
+                <div class="step-item" id="nav-step-5">
+                    <span class="step-num">5</span>
+                    <span class="step-label">Tamper Testing</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Application Container -->
+    <main class="main-content">
+        <!-- Notification Toast Box -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- STEP 1: RSA Key Generation Section -->
+        <section class="section-card key-gen-section" id="section-keygen">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="step-badge">STEP 1</span>
+                    <h2>Asymmetric RSA Key Generation</h2>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-generate-keys" class="btn-primary" aria-label="Generate new RSA Key Pairs">
+                        <span class="btn-icon">⚡</span>
+                        <span class="btn-text">Generate RSA Keys</span>
+                    </button>
+                </div>
+            </div>
+            
+            <p class="section-desc">
+                Generate independent <strong>2048-bit RSA key pairs</strong> for Alice and Bob. 
+                <span class="highlight-secure">Private keys remain strictly protected on the backend server</span> 
+                and are never exposed across the network. Only public keys (PEM format) are transmitted for verification.
+            </p>
+
+            <div class="keys-grid">
+                <!-- Alice's Public Key Card -->
+                <div class="key-card alice-key-card">
+                    <div class="key-card-header">
+                        <div class="actor-tag alice-tag">
+                            <span class="actor-avatar">👩‍💻</span>
+                            <span>Alice (Sender)</span>
+                        </div>
+                        <span class="key-status-badge badge-pending" id="alice-key-status">Keys Not Generated</span>
+                    </div>
+
+                    <div class="key-meta-row">
+                        <span class="meta-item">Type: <strong>RSA-2048</strong></span>
+                        <span class="meta-item">Exponent: <strong>e = 65537</strong></span>
+                    </div>
+
+                    <div class="fingerprint-box">
+                        <span class="fp-label">SHA-256 Fingerprint:</span>
+                        <code class="fp-value" id="alice-key-fp">None — Click "Generate RSA Keys"</code>
+                    </div>
+
+                    <div class="pem-container">
+                        <div class="pem-header">
+                            <span>Alice's Public Key (SubjectPublicKeyInfo PEM)</span>
+                            <button class="btn-copy-code" data-target="alice-pubkey-text" title="Copy Alice's Public Key">Copy</button>
+                        </div>
+                        <pre class="pem-code" id="alice-pubkey-text">-----BEGIN PUBLIC KEY-----
+Click "Generate RSA Keys" to generate 2048-bit key pair...
+-----END PUBLIC KEY-----</pre>
+                    </div>
+                    <div class="key-safety-note">
+                        <span class="note-icon">🛡️</span>
+                        <span>Alice's Private Key: <strong class="secure-text">Securely stored in backend memory (used exclusively for signing)</strong></span>
+                    </div>
+                </div>
+
+                <!-- Bob's Public Key Card -->
+                <div class="key-card bob-key-card">
+                    <div class="key-card-header">
+                        <div class="actor-tag bob-tag">
+                            <span class="actor-avatar">👨‍💻</span>
+                            <span>Bob (Receiver)</span>
+                        </div>
+                        <span class="key-status-badge badge-pending" id="bob-key-status">Keys Not Generated</span>
+                    </div>
+
+                    <div class="key-meta-row">
+                        <span class="meta-item">Type: <strong>RSA-2048</strong></span>
+                        <span class="meta-item">Exponent: <strong>e = 65537</strong></span>
+                    </div>
+
+                    <div class="fingerprint-box">
+                        <span class="fp-label">SHA-256 Fingerprint:</span>
+                        <code class="fp-value" id="bob-key-fp">None — Click "Generate RSA Keys"</code>
+                    </div>
+
+                    <div class="pem-container">
+                        <div class="pem-header">
+                            <span>Bob's Public Key (SubjectPublicKeyInfo PEM)</span>
+                            <button class="btn-copy-code" data-target="bob-pubkey-text" title="Copy Bob's Public Key">Copy</button>
+                        </div>
+                        <pre class="pem-code" id="bob-pubkey-text">-----BEGIN PUBLIC KEY-----
+Click "Generate RSA Keys" to generate 2048-bit key pair...
+-----END PUBLIC KEY-----</pre>
+                    </div>
+                    <div class="key-safety-note">
+                        <span class="note-icon">🛡️</span>
+                        <span>Bob's Private Key: <strong class="secure-text">Securely stored in backend memory</strong></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEPS 2, 3, 4: Split Actor Dashboard (Alice on Left, Bob on Right) -->
+        <div class="actors-dashboard-grid">
+            
+            <!-- LEFT PANEL: ALICE (SENDER & SIGNER) -->
+            <section class="actor-panel alice-panel" id="panel-alice">
+                <div class="panel-header">
+                    <div class="panel-identity">
+                        <div class="actor-avatar-lg alice-glow">👩‍💻</div>
+                        <div>
+                            <div class="actor-title-row">
+                                <h2>Alice — Sender</h2>
+                                <span class="role-badge role-sender">Sender / Signer</span>
+                            </div>
+                            <p class="panel-sub">Signs the message using her secret RSA Private Key</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Message Input & Presets -->
+                <div class="action-card">
+                    <div class="card-step-title">
+                        <span class="step-pill">STEP 2</span>
+                        <h3>Compose & Sign Message</h3>
+                    </div>
+
+                    <div class="preset-chips">
+                        <span class="preset-label">Quick Presets:</span>
+                        <button class="chip" data-msg="Transfer $5,000 from Alice account #8492 to Bob account #1204. Authorized.">💰 Bank Wire</button>
+                        <button class="chip" data-msg="Student Examination Final Grade: Computer Networks & Cryptography — PASS (Grade: A+).">🎓 Exam Grade</button>
+                        <button class="chip" data-msg="Contract Signed: Alice agrees to terms of the Open Source Project Agreement.">📜 Legal Agreement</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="alice-message-input">Plaintext Message to Sign:</label>
+                        <textarea id="alice-message-input" rows="4" placeholder="Type a message here that Alice wants to send to Bob...">Transfer $5,000 from Alice account #8492 to Bob account #1204. Authorized.</textarea>
+                        <div class="input-char-counter">
+                            <span id="alice-char-count">77 characters</span>
+                            <span id="alice-byte-count">77 bytes (UTF-8)</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-sign-message" class="btn-action btn-sign" disabled>
+                        <span class="btn-icon">✍️</span>
+                        <span class="btn-text">Sign Message with Alice's Private Key</span>
+                    </button>
+                    <p class="btn-help-text" id="sign-help-text">Generate RSA Keys first to enable signing.</p>
+                </div>
+
+                <!-- Alice Signing Output (Hash & Digital Signature) -->
+                <div class="crypto-output-card" id="alice-crypto-output">
+                    <div class="output-header">
+                        <h4>Alice's Cryptographic Output</h4>
+                        <span class="status-indicator status-idle" id="alice-sign-status">Awaiting Signature</span>
+                    </div>
+
+                    <!-- Step 2a: SHA-256 Digest Display -->
+                    <div class="crypto-field">
+                        <div class="field-label-row">
+                            <span class="field-name">1. SHA-256 Message Digest (Hash)</span>
+                            <span class="field-spec">256 bits / 64 hex chars</span>
+                            <button class="btn-copy-code" data-target="alice-hash-text" title="Copy Hash">Copy</button>
+                        </div>
+                        <div class="hash-display-box" id="alice-hash-text">
+                            No signature generated yet. Click "Sign Message".
+                        </div>
+                        <span class="field-explanation">
+                            💡 The exact message bytes are hashed first. Cryptographic signatures sign the fixed-size 256-bit hash, not the variable-length raw message.
+                        </span>
+                    </div>
+
+                    <!-- Step 2b: RSA-PSS Digital Signature Display -->
+                    <div class="crypto-field">
+                        <div class="field-label-row">
+                            <span class="field-name">2. RSA-PSS Digital Signature</span>
+                            <span class="field-spec">2048 bits / 256 bytes (Base64)</span>
+                            <button class="btn-copy-code" data-target="alice-sig-text" title="Copy Base64 Signature">Copy</button>
+                        </div>
+                        <div class="signature-display-box" id="alice-sig-text">
+                            Awaiting signing operation...
+                        </div>
+                        <span class="field-explanation">
+                            💡 Computed using Alice's Private Key + RSA-PSS (Probabilistic Signature Scheme with SHA-256).
+                        </span>
+                    </div>
+
+                    <!-- Step 3: Transfer to Bob Button -->
+                    <div class="transfer-action-box">
+                        <div class="transfer-info">
+                            <span class="step-pill">STEP 3</span>
+                            <strong>Transmit Payload across Network</strong>
+                        </div>
+                        <p class="transfer-note">
+                            <strong>Note:</strong> Digital signatures provide <em>authenticity and integrity</em>, 
+                            <strong>not confidentiality</strong>. The message travels as readable plaintext accompanied by the signature and Alice's public key.
+                        </p>
+                        <button id="btn-send-to-bob" class="btn-transfer" disabled>
+                            <span>Send Message, Signature & Public Key to Bob ➔</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: BOB (RECEIVER & VERIFIER) -->
+            <section class="actor-panel bob-panel" id="panel-bob">
+                <div class="panel-header">
+                    <div class="panel-identity">
+                        <div class="actor-avatar-lg bob-glow">👨‍💻</div>
+                        <div>
+                            <div class="actor-title-row">
+                                <h2>Bob — Receiver</h2>
+                                <span class="role-badge role-receiver">Receiver / Verifier</span>
+                            </div>
+                            <p class="panel-sub">Verifies the signature using Alice's Public Key</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Received Payload Details -->
+                <div class="action-card">
+                    <div class="card-step-title">
+                        <span class="step-pill">STEP 4</span>
+                        <h3>Received Transmission & Verification</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-with-badge">
+                            <label for="bob-received-message">Received Message (Plaintext):</label>
+                            <span class="badge-status-tag" id="msg-match-tag">Untampered</span>
+                        </div>
+                        <textarea id="bob-received-message" rows="3" placeholder="Waiting for Alice to transmit message..."></textarea>
+                    </div>
+
+                    <!-- Live Dynamic Hash of Bob's Current Message -->
+                    <div class="crypto-field compact">
+                        <div class="field-label-row">
+                            <span class="field-name">Current Computed SHA-256 Digest of Received Message:</span>
+                            <span class="field-spec" id="bob-hash-match-status">Matches Alice</span>
+                        </div>
+                        <div class="hash-display-box mini-hash" id="bob-live-hash">
+                            Hash recomputed automatically as text changes...
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-with-badge">
+                            <label for="bob-received-signature">Received Digital Signature (Base64):</label>
+                            <span class="badge-status-tag" id="sig-match-tag">Original</span>
+                        </div>
+                        <textarea id="bob-received-signature" rows="3" placeholder="Waiting for signature to be received..."></textarea>
+                    </div>
+
+                    <!-- Public Key Used for Verification -->
+                    <div class="form-group">
+                        <div class="label-with-badge">
+                            <label for="bob-verification-pubkey">Public Key Used for Verification:</label>
+                            <div class="key-selector-radio">
+                                <label><input type="radio" name="verify-key-choice" value="alice" checked> Alice's Public Key (Authentic)</label>
+                                <label><input type="radio" name="verify-key-choice" value="bob"> Bob's Public Key (Wrong Key Test)</label>
+                            </div>
+                        </div>
+                        <textarea id="bob-verification-pubkey" rows="3" readonly></textarea>
+                    </div>
+
+                    <button id="btn-verify-signature" class="btn-action btn-verify" disabled>
+                        <span class="btn-icon">🔍</span>
+                        <span class="btn-text">Verify Signature (RSA-PSS)</span>
+                    </button>
+                    <p class="btn-help-text" id="verify-help-text">Receive a signed message from Alice to enable verification.</p>
+                </div>
+
+                <!-- Bob's Verification Result Banner -->
+                <div class="verification-result-card" id="verification-result-card">
+                    <div class="verdict-banner" id="verdict-banner">
+                        <div class="verdict-icon" id="verdict-icon">⏳</div>
+                        <div class="verdict-details">
+                            <h3 class="verdict-title" id="verdict-title">Ready for Verification</h3>
+                            <p class="verdict-desc" id="verdict-desc">Click "Verify Signature" to run cryptographic validation on the backend using Alice's public key.</p>
+                        </div>
+                    </div>
+
+                    <div class="security-pillars-grid" id="security-pillars">
+                        <div class="pillar-box" id="pillar-auth">
+                            <span class="pillar-icon">👤</span>
+                            <div class="pillar-content">
+                                <strong>Authentication</strong>
+                                <span class="pillar-desc" id="desc-auth">Verifies who signed the data</span>
+                            </div>
+                        </div>
+                        <div class="pillar-box" id="pillar-integ">
+                            <span class="pillar-icon">🛡️</span>
+                            <div class="pillar-content">
+                                <strong>Integrity</strong>
+                                <span class="pillar-desc" id="desc-integ">Ensures 0 bits changed in transit</span>
+                            </div>
+                        </div>
+                        <div class="pillar-box" id="pillar-nonrep">
+                            <span class="pillar-icon">📜</span>
+                            <div class="pillar-content">
+                                <strong>Non-Repudiation</strong>
+                                <span class="pillar-desc" id="desc-nonrep">Signer cannot deny signing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- STEP 5: Interactive Message & Signature Tampering Studio -->
+        <section class="section-card tamper-studio-section" id="section-tamper">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="step-badge step-tamper">STEP 5</span>
+                    <h2>Interactive Message & Signature Tampering Studio</h2>
+                </div>
+                <div class="tamper-status-pill" id="tamper-status-pill">
+                    <span class="dot"></span>
+                    <span class="tamper-status-text">Untampered Original Payload</span>
+                </div>
+            </div>
+
+            <p class="section-desc">
+                Simulate an active <strong>Man-in-the-Middle (MitM) attacker</strong> or accidental data corruption in transit. 
+                Modify characters or corrupt the signature, then click <strong>"Verify Signature"</strong> above to observe cryptographic verification failure.
+            </p>
+
+            <div class="tamper-controls-grid">
+                <!-- Message Tampering Controls -->
+                <div class="tamper-card">
+                    <div class="tamper-card-header">
+                        <h4>⚡ Message Tampering Experiments</h4>
+                        <span class="card-badge">Data Integrity Attack</span>
+                    </div>
+                    <p class="card-hint">Alter the message content that Bob sees while keeping Alice's original signature untouched:</p>
+
+                    <div class="tamper-btn-cluster">
+                        <button id="btn-tamper-char" class="btn-tamper" disabled>
+                            <span class="tamper-icon">🔤</span>
+                            <span>Alter 1 Character</span>
+                        </button>
+                        <button id="btn-tamper-amount" class="btn-tamper" disabled>
+                            <span class="tamper-icon">💵</span>
+                            <span>Change $5,000 to $9,000</span>
+                        </button>
+                        <button id="btn-tamper-append" class="btn-tamper" disabled>
+                            <span class="tamper-icon">➕</span>
+                            <span>Append Whitespace " "</span>
+                        </button>
+                        <button id="btn-reset-message" class="btn-tamper btn-reset" disabled>
+                            <span class="tamper-icon">🔄</span>
+                            <span>Restore Original Message</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Signature Tampering Controls -->
+                <div class="tamper-card">
+                    <div class="tamper-card-header">
+                        <h4>⚡ Signature Tampering Experiments</h4>
+                        <span class="card-badge">Forgery & Corruption</span>
+                    </div>
+                    <p class="card-hint">Alter the cryptographic Base64 signature bytes to simulate forgery or channel corruption:</p>
+
+                    <div class="tamper-btn-cluster">
+                        <button id="btn-tamper-sig" class="btn-tamper" disabled>
+                            <span class="tamper-icon">💥</span>
+                            <span>Corrupt Signature (Flip Bits)</span>
+                        </button>
+                        <button id="btn-tamper-sig-trunc" class="btn-tamper" disabled>
+                            <span class="tamper-icon">✂️</span>
+                            <span>Truncate Signature</span>
+                        </button>
+                        <button id="btn-reset-sig" class="btn-tamper btn-reset" disabled>
+                            <span class="tamper-icon">🔄</span>
+                            <span>Restore Original Signature</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avalanche Effect Visualizer: Side-by-Side Comparison -->
+            <div class="avalanche-box">
+                <div class="avalanche-header">
+                    <h4>🔬 Cryptographic Hash Avalanche Effect Visualizer</h4>
+                    <span class="spec-note">SHA-256 changes drastically even if only 1 character is modified</span>
+                </div>
+                <div class="avalanche-grid">
+                    <div class="avalanche-col">
+                        <span class="hash-tag-label">Alice's Original SHA-256 Digest:</span>
+                        <code class="hash-display-code" id="avalanche-original-hash">None (Sign a message first)</code>
+                    </div>
+                    <div class="avalanche-col">
+                        <span class="hash-tag-label">Bob's Current Received Message SHA-256 Digest:</span>
+                        <code class="hash-display-code" id="avalanche-current-hash">None (Awaiting message)</code>
+                    </div>
+                </div>
+                <div class="avalanche-comparison-result" id="avalanche-diff-banner">
+                    Hashes match exactly. Message integrity intact.
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 6: Cryptographic Theory & Educational Deep Dive -->
+        <section class="section-card education-section" id="section-theory">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="step-badge step-theory">STEP 6</span>
+                    <h2>Cryptographic Architecture & Theory</h2>
+                </div>
+            </div>
+
+            <!-- Workflow Diagrams & Explanations -->
+            <div class="diagram-grid">
+                <!-- Alice's Signing Pipeline -->
+                <div class="pipeline-card">
+                    <div class="pipeline-header">
+                        <span class="pipeline-badge">Signing Flow (Alice)</span>
+                        <h4>How Digital Signing Works</h4>
+                    </div>
+                    <ol class="flow-steps-list">
+                        <li>
+                            <div class="flow-marker">1</div>
+                            <div class="flow-text">
+                                <strong>Exact Bytes:</strong> Alice's plaintext message is encoded to exact UTF-8 bytes.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">2</div>
+                            <div class="flow-text">
+                                <strong>SHA-256 Hash:</strong> Fixed-size 256-bit cryptographic digest computed from the bytes.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">3</div>
+                            <div class="flow-text">
+                                <strong>RSA-PSS Padding:</strong> Salt and Mask Generation Function (MGF1) are applied for provable security.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">4</div>
+                            <div class="flow-text">
+                                <strong>Private Key Operation:</strong> The padded hash is encrypted using <em>Alice's Private Key</em> $(S = m^d \pmod n)$.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">5</div>
+                            <div class="flow-text">
+                                <strong>Signature Output:</strong> 256-byte binary signature encoded to Base64 for transmission.
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Bob's Verification Pipeline -->
+                <div class="pipeline-card">
+                    <div class="pipeline-header">
+                        <span class="pipeline-badge">Verification Flow (Bob)</span>
+                        <h4>How Verification Works</h4>
+                    </div>
+                    <ol class="flow-steps-list">
+                        <li>
+                            <div class="flow-marker">1</div>
+                            <div class="flow-text">
+                                <strong>Receive Payload:</strong> Bob receives plaintext message $M$, signature $S$, and Alice's Public Key $(e, n)$.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">2</div>
+                            <div class="flow-text">
+                                <strong>Local Hash Calculation:</strong> Bob calculates $H_1 = \text{SHA-256}(M)$ directly on received text.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">3</div>
+                            <div class="flow-text">
+                                <strong>Public Key Operation:</strong> Bob decrypts signature using <em>Alice's Public Key</em> $(H_2 = S^e \pmod n)$.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">4</div>
+                            <div class="flow-text">
+                                <strong>PSS Unpadding & Compare:</strong> Bob verifies $H_1$ equals recovered $H_2$.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="flow-marker">5</div>
+                            <div class="flow-text">
+                                <strong>Verdict:</strong> If $H_1 == H_2 \rightarrow$ <strong>VALID</strong>; If $H_1 \neq H_2 \rightarrow$ <strong>INVALID</strong>.
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Essential Cryptographic Distinctions Table -->
+            <div class="concepts-comparison-box">
+                <h3>⚠️ Crucial Concept: Digital Signing vs Public Key Encryption</h3>
+                <div class="table-responsive">
+                    <table class="crypto-table">
+                        <thead>
+                            <tr>
+                                <th>Dimension</th>
+                                <th>Digital Signature (What we do here)</th>
+                                <th>Public Key Encryption (Confidentiality)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Primary Goal</strong></td>
+                                <td><strong>Authenticity, Integrity & Non-Repudiation</strong></td>
+                                <td><strong>Confidentiality / Secrecy</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Key Used to Create</strong></td>
+                                <td>Sender's (Alice's) <strong>Private Key</strong></td>
+                                <td>Recipient's (Bob's) <strong>Public Key</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Key Used to Verify / Decrypt</strong></td>
+                                <td>Sender's (Alice's) <strong>Public Key</strong> (Anyone can verify!)</td>
+                                <td>Recipient's (Bob's) <strong>Private Key</strong> (Only Bob can read)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Is Message Secret?</strong></td>
+                                <td><span class="badge-no">NO</span> — Plaintext is openly readable by anyone.</td>
+                                <td><span class="badge-yes">YES</span> — Plaintext is ciphertext, unreadable in transit.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Padding Scheme</strong></td>
+                                <td><strong>RSA-PSS</strong> (Probabilistic Signature Scheme)</td>
+                                <td><strong>RSA-OAEP</strong> (Optimal Asymmetric Encryption Padding)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Deep Dive Security Pillars Explanations -->
+            <div class="pillars-deep-dive-grid">
+                <div class="deep-dive-card">
+                    <h4>👤 1. Authentication</h4>
+                    <p>
+                        Successful verification proves that the signature was generated by the entity possessing Alice's unique private key. 
+                        Since the private key never leaves Alice's custody, Bob is mathematically certain the message originated from Alice.
+                    </p>
+                </div>
+                <div class="deep-dive-card">
+                    <h4>🛡️ 2. Integrity</h4>
+                    <p>
+                        Cryptographic hash functions (SHA-256) possess the <em>avalanche effect</em> and <em>pre-image resistance</em>. 
+                        Changing even one bit of the plaintext message produces an entirely different hash, causing signature verification to fail immediately.
+                    </p>
+                </div>
+                <div class="deep-dive-card">
+                    <h4>📜 3. Non-Repudiation</h4>
+                    <p>
+                        Alice cannot claim "I didn't send this" because only her private key could produce that valid signature. 
+                        However, non-repudiation in real-world PKI also relies on trustworthy digital certificates (X.509) and secure key storage (hardware security modules).
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Viva & Practical Demonstration Guide Modal -->
+    <div id="viva-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="viva-modal-title">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <h2 id="viva-modal-title">🎓 College Practical Demonstration Script & Viva Guide</h2>
+                    <p class="modal-subtitle">Comprehensive examiner questions, viva answers, and step-by-step lab demonstration script.</p>
+                </div>
+                <button id="btn-close-viva" class="modal-close-btn" aria-label="Close Modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Tab Controls -->
+                <div class="modal-tabs">
+                    <button class="modal-tab-btn active" data-tab="tab-script">📋 Practical Demo Script</button>
+                    <button class="modal-tab-btn" data-tab="tab-viva">💡 Top 10 Viva Voce Q&A</button>
+                </div>
+
+                <!-- TAB 1: Live Demo Script -->
+                <div class="tab-pane active" id="tab-script">
+                    <div class="script-card">
+                        <h3>Laboratory Demonstration Walkthrough (Checklist for Students)</h3>
+                        <p class="tab-note">Follow these exact steps in front of your examiner during the practical:</p>
+                        
+                        <div class="demo-step-box">
+                            <h4>Phase 1: Key Generation</h4>
+                            <p>1. Explain to the examiner that RSA is an asymmetric cryptosystem requiring a public key $(e, n)$ and a private key $(d, n)$.</p>
+                            <p>2. Click <strong>"Generate RSA Keys"</strong>. Point out Alice's and Bob's 2048-bit public keys and SHA-256 fingerprints.</p>
+                            <p>3. <em>Key Viva point:</em> Emphasize that the private keys are safely kept in backend memory and are never sent over HTTP.</p>
+                        </div>
+
+                        <div class="demo-step-box">
+                            <h4>Phase 2: Alice Signs the Message</h4>
+                            <p>1. Select the <strong>"Bank Wire"</strong> preset ("Transfer $5,000 from Alice...").</p>
+                            <p>2. Click <strong>"Sign Message with Alice's Private Key"</strong>.</p>
+                            <p>3. Show the examiner the generated <strong>SHA-256 hash</strong> (64 hex characters) and the resulting <strong>RSA-PSS signature</strong> (256 bytes Base64 encoded).</p>
+                            <p>4. Explain that Alice signs the <em>hash</em>, not the entire message, for computational efficiency and fixed size.</p>
+                        </div>
+
+                        <div class="demo-step-box">
+                            <h4>Phase 3: Network Transmission to Bob</h4>
+                            <p>1. Click <strong>"Send Message, Signature & Public Key to Bob"</strong>.</p>
+                            <p>2. Explain that the channel is unencrypted: Bob can read the message in plaintext. Digital signatures provide <em>authenticity and integrity</em>, not confidentiality.</p>
+                        </div>
+
+                        <div class="demo-step-box">
+                            <h4>Phase 4: Bob Verifies the Authentic Signature</h4>
+                            <p>1. On Bob's panel, click <strong>"Verify Signature (RSA-PSS)"</strong>.</p>
+                            <p>2. Show the green <strong>"VALID"</strong> banner. Point out that Bob used Alice's public key to verify that Alice signed it and that zero characters were modified.</p>
+                        </div>
+
+                        <div class="demo-step-box">
+                            <h4>Phase 5: Tampering Demonstration (MitM Attack)</h4>
+                            <p>1. Scroll to the Tampering Studio. Click <strong>"Change $5,000 to $9,000"</strong>.</p>
+                            <p>2. Point to the Avalanche Effect Visualizer: show how changing just one character completely scrambled the SHA-256 hash.</p>
+                            <p>3. In Bob's panel, click <strong>"Verify Signature"</strong>.</p>
+                            <p>4. Show the red <strong>"INVALID"</strong> banner! Explain that Bob detected message alteration because the recalculated hash does not match the decrypted signature.</p>
+                            <p>5. Click <strong>"Corrupt Signature"</strong> and verify again to prove that tampered signatures also fail.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Viva Q&A -->
+                <div class="tab-pane" id="tab-viva">
+                    <div class="viva-accordion">
+                        
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q1: What is a Digital Signature and what security goals does it achieve?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> A digital signature is a cryptographic mechanism based on asymmetric cryptography that binds a sender's identity to a specific message. It achieves three core security goals:</p>
+                                <ul>
+                                    <li><strong>Authentication:</strong> Confirms the sender's identity (only the private key holder could have generated it).</li>
+                                    <li><strong>Integrity:</strong> Ensures the message has not been altered or tampered with in transit.</li>
+                                    <li><strong>Non-repudiation:</strong> Prevents the signer from falsely denying having sent the message.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q2: What is the difference between Digital Signing and Asymmetric Encryption?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> In <em>Asymmetric Encryption</em> (for confidentiality), the sender encrypts with the <strong>recipient's public key</strong>, and only the recipient's private key can decrypt it. In <em>Digital Signatures</em>, the sender signs with their <strong>own private key</strong>, and <strong>anyone with the sender's public key</strong> can verify the signature. Digital signatures do not conceal the plaintext message.</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q3: Why do we sign the Hash of a message rather than the raw message directly?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> There are two critical reasons:</p>
+                                <ul>
+                                    <li><strong>Performance:</strong> RSA operations on large files (e.g., 50 MB) are computationally expensive. Hashing reduces any arbitrary length message to a small, fixed size (e.g., 256 bits for SHA-256), which signs in milliseconds.</li>
+                                    <li><strong>Mathematical limits:</strong> RSA can only encrypt or sign data smaller than its modulus size $n$ (for a 2048-bit key, data must be &lt; 256 bytes). Hashing ensures the input always fits inside the RSA modulus.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q4: What is RSA-PSS and why is it preferred over PKCS#1 v1.5?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> RSA-PSS (Probabilistic Signature Scheme, specified in PKCS#1 v2.1) incorporates a randomized salt and a Mask Generation Function (MGF1). Unlike deterministic schemes like PKCS#1 v1.5, RSA-PSS produces a different signature every time even for the exact same message, which prevents chosen-ciphertext attacks and mathematical forging. RSA-PSS is provably secure in the Random Oracle Model.</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q5: What happens during signature verification mathematically?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> Given signature $S$, message $M$, and Alice's public key $(e, n)$:</p>
+                                <ol>
+                                    <li>Bob computes the message hash independently: $H_1 = \text{SHA-256}(M)$.</li>
+                                    <li>Bob decrypts the signature using Alice's public exponent $e$: $P = S^e \pmod n$.</li>
+                                    <li>Bob extracts the hash $H_2$ from the recovered padded structure $P$.</li>
+                                    <li>If $H_1 == H_2$, the signature is <strong>VALID</strong>. If $H_1 \neq H_2$, verification fails.</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q6: What is the "Avalanche Effect" in cryptographic hashing?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> The avalanche effect is a desirable property of cryptographic hash functions where a tiny change in input (such as flipping a single bit or changing one character) produces a drastic, unpredictable change in the output digest (typically &gt;50% of the bits change). This makes tampering instantly detectable.</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q7: What is the size of an RSA-2048 digital signature?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> For a 2048-bit RSA key, the modulus $n$ is 2048 bits (256 bytes). Therefore, the raw cryptographic signature is always exactly <strong>256 bytes</strong> (2048 bits) long. When Base64 encoded for transmission over JSON/HTTP, it occupies approximately 344 characters.</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q8: Does a digital signature guarantee confidentiality?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> No. Digital signatures provide authenticity, integrity, and non-repudiation, but <strong>not confidentiality</strong>. The message itself is transmitted in plaintext alongside the signature. To achieve confidentiality as well, the sender must encrypt the message (or the message + signature) using the recipient's public key or a symmetric session key (hybrid encryption / PGP / S/MIME).</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q9: What happens if Bob uses his own public key to verify Alice's signature?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> Verification fails (INVALID). The signature was computed using Alice's private key $d_A$, which mathematically inverts only with Alice's public key $(e_A, n_A)$. Attempting to decrypt the signature with Bob's public key $(e_B, n_B)$ yields random mathematical noise that does not match the message hash.</p>
+                            </div>
+                        </div>
+
+                        <div class="viva-item">
+                            <button class="viva-q">
+                                <span>Q10: Why are private keys never sent to the frontend or exposed in API responses?</span>
+                                <span class="viva-toggle">+</span>
+                            </button>
+                            <div class="viva-a">
+                                <p><strong>Answer:</strong> In asymmetric cryptography, the security of the entire system hinges upon the private key remaining strictly confidential to its owner. If Alice's private key were exposed or transmitted across an unencrypted or browser-inspectable channel, any attacker could impersonate Alice and forge valid digital signatures for any arbitrary message.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="btn-modal-done" class="btn-primary">Back to Demonstration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p><strong>RSA Digital Signature Laboratory</strong> &bull; College Cryptography & Network Security Practical Demonstration</p>
+            <p class="footer-sub">Implemented with Python Flask, <code>cryptography</code> library (RSA-PSS with SHA-256), and Vanilla JavaScript.</p>
+        </div>
+    </footer>
+
+    <!-- Main Logic Script -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
